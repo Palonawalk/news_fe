@@ -1,7 +1,6 @@
-import Home from '../components/Home';
+import Home from '@/components/Home';
 
-function Index() {
+// L'url de cette page est /
+export default function Index() {
   return <Home />;
 }
-
-export default Index;

@@ -3,8 +3,10 @@ import styles from '../styles/Header.module.css';
 import Link from 'next/link';
 import { useDispatch, useSelector } from 'react-redux';
 import { login, logout } from '../reducers/user';
+import { removeAllBookmarks } from '@/reducers/bookmarks';
+import { displayArticles } from '@/reducers/hiddenArticles';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faUser, faXmark } from '@fortawesome/free-solid-svg-icons';
+import { faUser, faXmark, faEye } from '@fortawesome/free-solid-svg-icons';
 import { DateTime } from 'luxon';
 import { Modal } from 'antd';
 
@@ -12,16 +14,14 @@ import { Modal } from 'antd';
 
 function Header() {
     const dispatch = useDispatch();
+    const user = useSelector((state) => state.user.value);
+
     const date = DateTime.now().toFormat('MMMM dd yyyy'); // On utilise la librairie Luxon pour afficher la date du jour.
     const [isModalVisible, setIsModalVisible] = useState(false); // On utilise le hook useState pour gérer l'état du modal. Par défaut, le modal n'est pas visible.
-
     const [signupUsername, setSignupUsername] = useState('');
     const [signupPassword, setSignupPassword] = useState('');
     const [signinUsername, setSigninUsername] = useState('');
     const [signinPassword, setSigninPassword] = useState('');
-
-    const user = useSelector((state) => state.user.value);
-    console.log(user);
 
     const handleSignup = () => {
         fetch('http://localhost:3001/users/signup', {
@@ -35,9 +35,10 @@ function Header() {
             .then((res) => res.json())
             .then((data) => {
                 if (data.result) {
-                    dispatch(login({ isConnected: true, username: signupUsername }));
+                    dispatch(login({ token: data.token, username: signupUsername }));
                     setSignupUsername('');
                     setSignupPassword('');
+                    setIsModalVisible(false);
                 }
             });
     };
@@ -53,9 +54,10 @@ function Header() {
             .then((res) => res.json())
             .then((data) => {
                 if (data.result) {
-                    dispatch(login({ isConnected: true, username: signinUsername }));
+                    dispatch(login({ token: data.token, username: signinUsername }));
                     setSigninUsername('');
                     setSigninPassword('');
+                    setIsModalVisible(false);
                 }
             });
     };
@@ -67,12 +69,11 @@ function Header() {
 
     const handelLogout = () => {
         dispatch(logout());
-        setIsModalVisible(!isModalVisible);
+        dispatch(removeAllBookmarks());
     };
 
     let userSection;
-
-    if (user.isConnected) {
+    if (user.token) {
         userSection = (
             <div>
                 Welcome {user.username} /
@@ -104,8 +105,7 @@ function Header() {
     }
 
     let modalContent;
-
-    if (!user.isConnected) {
+    if (!user.token) {
         modalContent = // On définit le contenu du modal. Il s'agit de deux formulaires d'authentification (signup et signin).
             (
                 <div className={styles.registerContainer}>
@@ -153,6 +153,13 @@ function Header() {
                 <Link href="/">
                     <h1 className={styles.title}>My News</h1>
                 </Link>
+                {/* <FontAwesomeIcon
+                    onClick={() => {
+                        dispatch(displayArticles());
+                    }}
+                    icon={faEye}
+                    className={styles.eyeIcon}
+                /> */}
                 {userSection}
             </div>
             <div className={styles.linkContainer}>

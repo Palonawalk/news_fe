@@ -13,11 +13,15 @@ export const bookmarksSlice = createSlice({
     },
     removeBookmarks: (state, action) => {
     state.value = state.value.filter(
-        (bookmark) => bookmark.title != action.payload.title
+        (element) => element.title != action.payload.title
     );
+    },
+    removeAllBookmarks: (state, action) => {
+    state.value = [];
     },
 },
 });
 
-export const { addBookmarks, removeBookmarks } = bookmarksSlice.actions;
+export const { addBookmarks, removeBookmarks, removeAllBookmarks } =
+    bookmarksSlice.actions;
 export default bookmarksSlice.reducer;
